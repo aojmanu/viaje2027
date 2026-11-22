@@ -213,6 +213,7 @@ h2.sec{font-family:var(--d);font-weight:600;font-size:17px;margin:0 0 4px;letter
     <button class="tab" role="tab" data-view="reservas" aria-selected="false">Reservas</button>
     <button class="tab" role="tab" data-view="gastos" aria-selected="false">Gastos</button>
     <button class="tab" role="tab" data-view="tomy" aria-selected="false">Tomy</button>
+    <button class="tab" role="tab" data-view="paseos" aria-selected="false">Paseos</button>
   </nav>
 </div>
 
@@ -222,6 +223,7 @@ h2.sec{font-family:var(--d);font-weight:600;font-size:17px;margin:0 0 4px;letter
   <section id="view-reservas" class="view" hidden></section>
   <section id="view-gastos" class="view" hidden></section>
   <section id="view-tomy" class="view" hidden></section>
+  <section id="view-paseos" class="view" hidden></section>
 </main>
 
 <script>
@@ -401,6 +403,19 @@ const TOMY=[
  {date:"27 feb", ico:"✈", city:"Panamá → Buenos Aires", txt:"Copa CM219 · vuelven todos juntos"}
 ];
 
+/* ---------- CIVITATIS (free tours "a la gorra" · se refresca con el agente) ---------- */
+const CIVITATIS=[
+ {city:"Madrid", tour:"Free tour por Madrid", url:"https://www.civitatis.com/es/madrid/free-tour-madrid/"},
+ {city:"Toledo", tour:"Free tour por Toledo (día 18/1)", url:"https://www.civitatis.com/en/toledo/free-walking-tour"},
+ {city:"Segovia", tour:"Visita guiada por Segovia (día 18/1)", url:"https://www.civitatis.com/en/segovia/guided-tour"},
+ {city:"Valencia", tour:"Free tours en Valencia (día 16/1)", url:"https://www.civitatis.com/es/valencia/"},
+ {city:"Sevilla", tour:"Free tour por Sevilla", url:"https://www.civitatis.com/en/seville/free-tour/"},
+ {city:"Granada", tour:"Free tour por Granada (día 22/1)", url:"https://www.civitatis.com/es/granada/free-tour-granada/"},
+ {city:"Córdoba", tour:"Free tour por Córdoba (día 24/1)", url:"https://www.civitatis.com/es/cordoba/free-tour-cordoba/"},
+ {city:"Londres", tour:"Free tour por Londres (en español)", url:"https://www.civitatis.com/es/londres/free-tour-londres/"},
+ {city:"París", tour:"Free tour / visita guiada por París", url:"https://www.civitatis.com/es/paris/visita-guiada-paris"}
+];
+
 /* ---------- STATE ---------- */
 let ov={};      // overrides de reservas
 let dov={};     // overrides de agenda (días)
@@ -431,7 +446,15 @@ function stopsOf(dayId){
 function dayField(dayId,k){const o=dov[dayId]||{};return o[k]!==undefined?o[k]:DAYINDEX[dayId][k];}
 
 /* ---------- RENDER ---------- */
-function render(){renderResumen();renderAgenda();renderReservas();renderGastos();renderTomy();updateProgress();}
+function render(){renderResumen();renderAgenda();renderReservas();renderGastos();renderTomy();renderPaseos();updateProgress();}
+function renderPaseos(){
+  let h=`<h2 class="sec">Paseos a la gorra</h2><p class="sub">Free tours de Civitatis por ciudad — guías de pago voluntario. Tocá para ver horarios y reservar. El agente los revisa cada semana.</p><div class="list">`;
+  CIVITATIS.forEach(e=>{
+    h+=`<a class="item" href="${esc(e.url)}" target="_blank" rel="noopener" style="display:block;text-decoration:none;color:inherit"><div class="ihead"><span class="ico">🚶</span><div class="imid"><div class="t">${esc(e.city)}</div><div class="meta">${esc(e.tour)}</div></div><span class="chev">↗</span></div></a>`;
+  });
+  h+=`</div><p class="sub" style="margin-top:12px">Son gratis / a la gorra: reservás el cupo online y al final le dejás al guía lo que quieras.</p>`;
+  $("#view-paseos").innerHTML=h;
+}
 function renderTomy(){
   let h=`<h2 class="sec">Tomy y amigos</h2><p class="sub">Recorrido de Tomás, por separado del grupo. Se va actualizando desde TripIt a medida que cargan cosas.</p>`;
   h+=`<div class="cityblock" style="border-radius:12px">`;
@@ -573,7 +596,7 @@ window.__applyRemote=function(items,days){
 /* ---------- EVENTS ---------- */
 function switchView(v){
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
-  ["resumen","agenda","reservas","gastos","tomy"].forEach(x=>$("#view-"+x).hidden=(x!==v));
+  ["resumen","agenda","reservas","gastos","tomy","paseos"].forEach(x=>$("#view-"+x).hidden=(x!==v));
   if(location.hash.slice(1)!==v)history.replaceState(null,"","#"+v);
   window.scrollTo(0,0);
 }
@@ -637,8 +660,8 @@ function init(){
   dbReady=true;$("#sync").classList.add("on");
   render();
   const hv=location.hash.slice(1);
-  if(["resumen","agenda","reservas","gastos","tomy"].includes(hv))switchView(hv);
-  window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["resumen","agenda","reservas","gastos","tomy"].includes(v))switchView(v);});
+  if(["resumen","agenda","reservas","gastos","tomy","paseos"].includes(hv))switchView(hv);
+  window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["resumen","agenda","reservas","gastos","tomy","paseos"].includes(v))switchView(v);});
   // Service worker: permite usar la app sin internet (ideal en el viaje).
   if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
 }
