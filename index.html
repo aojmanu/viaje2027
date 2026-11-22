@@ -212,6 +212,7 @@ h2.sec{font-family:var(--d);font-weight:600;font-size:17px;margin:0 0 4px;letter
     <button class="tab" role="tab" data-view="agenda" aria-selected="false">Día a día</button>
     <button class="tab" role="tab" data-view="reservas" aria-selected="false">Reservas</button>
     <button class="tab" role="tab" data-view="gastos" aria-selected="false">Gastos</button>
+    <button class="tab" role="tab" data-view="tomy" aria-selected="false">Tomy</button>
   </nav>
 </div>
 
@@ -220,6 +221,7 @@ h2.sec{font-family:var(--d);font-weight:600;font-size:17px;margin:0 0 4px;letter
   <section id="view-agenda" class="view" hidden></section>
   <section id="view-reservas" class="view" hidden></section>
   <section id="view-gastos" class="view" hidden></section>
+  <section id="view-tomy" class="view" hidden></section>
 </main>
 
 <script>
@@ -253,7 +255,9 @@ const DEFAULTS=[
  {id:"h3",cat:"hoteles",title:"Londres · Citadines Trafalgar Square",date:"26–31 ene · 5 noches",sort:"2027-01-26",who:"Ariel, Lau, Sofi",status:"confirmado",loc:"9FO8E11N38",amount:1612.50,cur:"GBP",pri:"",notes:"Conf. 9FO8E11N38 · Apto 1 dorm · desayuno incl · 18-21 Northumberland Ave, WC2N. Check-in 26/1 15:00."},
  {id:"h4",cat:"hoteles",title:"París · Citadines Bastille Marais",date:"31 ene – 6 feb · 6 noches",sort:"2027-01-31",who:"Ariel, Lau, Sofi",status:"confirmado",loc:"51122SH099118",amount:1473.96,cur:"EUR",pri:"",notes:"Conf. 51122SH099118 · Apto de lujo 1 dorm (con cocina) · 37 bd Richard Lenoir, 75011. Check-in 31/1 15:00 · check-out 6/2."},
  {id:"h5",cat:"hoteles",title:"Madrid · Petit Palace (cierre)",date:"6–9 feb · 3 noches",sort:"2027-02-06",who:"Lau, Sofi, Tomás",status:"confirmado",loc:"P2954228 / M4795888",amount:919.98,cur:"EUR",pri:"",notes:"Booking P2954228 · Ref M4795888 · cuádruple, desayuno incl · Pl. del Carmen 4. Check-in 6/2 · check-out 9/2. Reencuentro con Tomás."},
- {id:"h6",cat:"hoteles",title:"Londres · Tomás (con amigos)",date:"s/f",sort:"2027-01-24",who:"Tomás",status:"pendiente",loc:"",amount:null,cur:"",pri:"baja",notes:"Su paquete."},
+ {id:"h6",cat:"hoteles",title:"Londres · Tomás (con amigos)",date:"s/f",sort:"2027-01-24",who:"Tomás",status:"pendiente",loc:"",amount:null,cur:"",pri:"baja",notes:"Su paquete. Ver detalle en la hoja Tomy."},
+ {id:"h7",cat:"hoteles",title:"Miami · SpringHill Suites (llegada)",date:"13–14 ene · 1 noche",sort:"2027-01-13",who:"Los 4",status:"confirmado",loc:"",amount:null,cur:"USD",pri:"",notes:"Escala a la ida (noche en Miami). 6700 NW 7th St, Miami Airport. (según TripIt)"},
+ {id:"h8",cat:"hoteles",title:"Miami · Courtyard Dolphin Mall (regreso)",date:"9–10 feb · 1 noche",sort:"2027-02-09",who:"Lau, Sofi, Tomás",status:"confirmado",loc:"",amount:null,cur:"USD",pri:"",notes:"Escala al regreso (Ariel ya en Panamá). 11275 NW 12th St. (según TripIt)"},
  {id:"e1",cat:"entradas",title:"ETA Reino Unido (x4)",date:"✓ aprobadas",sort:"2027-01-05",who:"Los 4",status:"confirmado",loc:"",amount:null,cur:"GBP",pri:"",notes:"✓ APROBADAS las 4. Atadas al pasaporte, no hay que imprimir nada. Validez ~2 años."},
  {id:"e2",cat:"entradas",title:"Alhambra y Generalife",date:"22 ene",sort:"2027-01-22",who:"Los 4",status:"confirmado",loc:"2158490NBRYF",amount:null,cur:"EUR",pri:"",notes:"Palacios Nazaríes 12:00. Llevar DNI/pasaporte original."},
  {id:"e3",cat:"entradas",title:"Torre Eiffel",date:"1 feb",sort:"2027-02-01",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"alta",notes:"Reserva horaria (al atardecer). Pisos 1 y 2 — la cima suele cerrar en invierno."},
@@ -383,6 +387,20 @@ const PHASES=[
 const DAYINDEX={};
 PHASES.forEach(p=>p.cities.forEach(c=>c.days.forEach(d=>{DAYINDEX[d.id]=d;})));
 
+/* ---------- TOMY (recorrido de Tomás y amigos · desde TripIt) ---------- */
+const TOMY=[
+ {date:"23 ene", ico:"✈", city:"Sevilla → Londres", txt:"Vueling VY7505 · 13:40 → 15:30 · loc. OP35WN"},
+ {date:"21–26 ene", ico:"🏨", city:"Londres", txt:"LX Russell Square Apartments · Guilford St, Camden WC1N"},
+ {date:"26–28 ene", ico:"🏨", city:"Manchester", txt:"Quay Apartments · 26 Edge St, M4 1HN"},
+ {date:"28 ene", ico:"✈", city:"Manchester → Ámsterdam", txt:"KLM KL1030 · 09:05 → 11:30"},
+ {date:"28–30 ene", ico:"🏨", city:"Ámsterdam", txt:"Apple Inn Hotel · Koninginneweg 93, Oud Zuid"},
+ {date:"30 ene – 4 feb", ico:"🏨", city:"París", txt:"Duplex Sèvres Lecourbe · 29 Rue Lecourbe, 15º"},
+ {date:"pendiente", ico:"🎫", city:"Barcelona → Madrid", txt:"Falta emitir (sin fecha todavía)"},
+ {date:"6–9 feb", ico:"🏨", city:"Madrid", txt:"Petit Palace (cierre) · se reúne con Lau y Sofi"},
+ {date:"9–10 feb", ico:"✈", city:"Madrid → Miami → Panamá", txt:"LH1117 / LH462 · Courtyard Miami · Copa CM227"},
+ {date:"27 feb", ico:"✈", city:"Panamá → Buenos Aires", txt:"Copa CM219 · vuelven todos juntos"}
+];
+
 /* ---------- STATE ---------- */
 let ov={};      // overrides de reservas
 let dov={};     // overrides de agenda (días)
@@ -413,7 +431,16 @@ function stopsOf(dayId){
 function dayField(dayId,k){const o=dov[dayId]||{};return o[k]!==undefined?o[k]:DAYINDEX[dayId][k];}
 
 /* ---------- RENDER ---------- */
-function render(){renderResumen();renderAgenda();renderReservas();renderGastos();updateProgress();}
+function render(){renderResumen();renderAgenda();renderReservas();renderGastos();renderTomy();updateProgress();}
+function renderTomy(){
+  let h=`<h2 class="sec">Tomy y amigos</h2><p class="sub">Recorrido de Tomás, por separado del grupo. Se va actualizando desde TripIt a medida que cargan cosas.</p>`;
+  h+=`<div class="cityblock" style="border-radius:12px">`;
+  TOMY.forEach(e=>{
+    h+=`<div class="day"><div class="dhead"><span class="dday" style="background:var(--uk)">${esc(e.date)}</span><span class="dtitle">${esc(e.ico)} ${esc(e.city)}</span></div><div class="stopnote" style="margin:2px 0 0 2px">${esc(e.txt)}</div></div>`;
+  });
+  h+=`</div><p class="sub" style="margin-top:12px">¿Querés editar o sumar paradas de Tomás? Decímelo y lo agrego.</p>`;
+  $("#view-tomy").innerHTML=h;
+}
 
 function updateProgress(){
   const it=allItems();
@@ -546,7 +573,7 @@ window.__applyRemote=function(items,days){
 /* ---------- EVENTS ---------- */
 function switchView(v){
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
-  ["resumen","agenda","reservas","gastos"].forEach(x=>$("#view-"+x).hidden=(x!==v));
+  ["resumen","agenda","reservas","gastos","tomy"].forEach(x=>$("#view-"+x).hidden=(x!==v));
   if(location.hash.slice(1)!==v)history.replaceState(null,"","#"+v);
   window.scrollTo(0,0);
 }
@@ -610,8 +637,8 @@ function init(){
   dbReady=true;$("#sync").classList.add("on");
   render();
   const hv=location.hash.slice(1);
-  if(["resumen","agenda","reservas","gastos"].includes(hv))switchView(hv);
-  window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["resumen","agenda","reservas","gastos"].includes(v))switchView(v);});
+  if(["resumen","agenda","reservas","gastos","tomy"].includes(hv))switchView(hv);
+  window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["resumen","agenda","reservas","gastos","tomy"].includes(v))switchView(v);});
   // Service worker: permite usar la app sin internet (ideal en el viaje).
   if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
 }
