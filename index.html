@@ -531,10 +531,17 @@ function renderGastos(){
 const LS_ITEMS="viaje2027_items", LS_DAYS="viaje2027_days";
 function saveLS(){try{localStorage.setItem(LS_ITEMS,JSON.stringify(ov));localStorage.setItem(LS_DAYS,JSON.stringify(dov));$("#sync").classList.add("on");}catch(e){$("#sync").classList.remove("on");}}
 function loadLS(){try{ov=JSON.parse(localStorage.getItem(LS_ITEMS)||"{}")||{};}catch(e){ov={};}try{dov=JSON.parse(localStorage.getItem(LS_DAYS)||"{}")||{};}catch(e){dov={};}}
-function persistItem(id){saveLS();}
-function persistDay(id){saveLS();}
+function persistItem(id){saveLS();if(window.__sync){if(ov[id]===undefined)window.__sync.full(ov,dov);else window.__sync.item(id,ov[id]);}}
+function persistDay(id){saveLS();if(window.__sync)window.__sync.day(id,dov[id]);}
 function setItem(id,k,val){const cur=Object.assign({},ov[id]||{});cur[k]=val;ov[id]=cur;persistItem(id);}
 function saveDay(id,patch){dov[id]=Object.assign({},dov[id]||{},patch);persistDay(id);}
+/* Aplica cambios que llegan desde la nube (otro teléfono). No pisa si estás tipeando. */
+window.__applyRemote=function(items,days){
+  ov=items||{};dov=days||{};saveLS();
+  const ae=document.activeElement;
+  const editing=ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+  if(!editing)render();
+};
 
 /* ---------- EVENTS ---------- */
 function switchView(v){
@@ -609,6 +616,50 @@ function init(){
   if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
 }
 if(document.readyState!=="loading")init();else window.addEventListener("DOMContentLoaded",init);
+</script>
+
+<!-- ======= SINCRONIZACIÓN EN LA NUBE (Firebase) ======= -->
+<script>
+/* Config del proyecto Firebase. Reemplazar por la del proyecto real. */
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC1iW2BdMLZlmPQjK3DSG0u92LFoTbrxSs",
+  authDomain: "viaje2027-6c590.firebaseapp.com",
+  projectId: "viaje2027-6c590",
+  storageBucket: "viaje2027-6c590.firebasestorage.app",
+  messagingSenderId: "245466546730",
+  appId: "1:245466546730:web:594c8e3aa13002b9f1b953"
+};
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+const cfg = window.FIREBASE_CONFIG;
+if (cfg && cfg.apiKey && cfg.apiKey !== "PEGAR") {
+  try {
+    const app = initializeApp(cfg);
+    const dbf = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+    const auth = getAuth(app);
+    const ref = doc(dbf, "trips", "ojman2027");
+    let ready = false;
+    const dot = document.getElementById("sync");
+    window.__sync = {
+      item(id, val){ if(!ready) return; setDoc(ref, { items: { [id]: val } }, { merge: true }).catch(e=>{console.warn(e);if(dot)dot.classList.remove("on");}); },
+      day(id, val){ if(!ready) return; setDoc(ref, { days: { [id]: val } }, { merge: true }).catch(e=>{console.warn(e);if(dot)dot.classList.remove("on");}); },
+      full(items, days){ if(!ready) return; setDoc(ref, { items, days }, { merge: false }).catch(e=>{console.warn(e);if(dot)dot.classList.remove("on");}); }
+    };
+    signInAnonymously(auth).catch(e=>console.warn("auth", e));
+    onAuthStateChanged(auth, u => {
+      if (!u) return;
+      ready = true; if(dot) dot.classList.add("on");
+      onSnapshot(ref, snap => {
+        const d = snap.data() || {};
+        if (window.__applyRemote) window.__applyRemote(d.items || {}, d.days || {});
+      }, e => { console.warn("snap", e); if(dot) dot.classList.remove("on"); });
+    });
+  } catch(e){ console.warn("firebase init", e); }
+}
 </script>
 </body>
 </html>
