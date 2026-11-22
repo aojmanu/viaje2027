@@ -257,7 +257,6 @@ const DEFAULTS=[
  {id:"h3",cat:"hoteles",title:"Londres · Citadines Trafalgar Square",date:"26–31 ene · 5 noches",sort:"2027-01-26",who:"Ariel, Lau, Sofi",status:"confirmado",loc:"9FO8E11N38",amount:1612.50,cur:"GBP",pri:"",notes:"Conf. 9FO8E11N38 · Apto 1 dorm · desayuno incl · 18-21 Northumberland Ave, WC2N. Check-in 26/1 15:00."},
  {id:"h4",cat:"hoteles",title:"París · Citadines Bastille Marais",date:"31 ene – 6 feb · 6 noches",sort:"2027-01-31",who:"Ariel, Lau, Sofi",status:"confirmado",loc:"51122SH099118",amount:1473.96,cur:"EUR",pri:"",notes:"Conf. 51122SH099118 · Apto de lujo 1 dorm (con cocina) · 37 bd Richard Lenoir, 75011. Check-in 31/1 15:00 · check-out 6/2."},
  {id:"h5",cat:"hoteles",title:"Madrid · Petit Palace (cierre)",date:"6–9 feb · 3 noches",sort:"2027-02-06",who:"Lau, Sofi, Tomás",status:"confirmado",loc:"P2954228 / M4795888",amount:919.98,cur:"EUR",pri:"",notes:"Booking P2954228 · Ref M4795888 · cuádruple, desayuno incl · Pl. del Carmen 4. Check-in 6/2 · check-out 9/2. Reencuentro con Tomás."},
- {id:"h6",cat:"hoteles",title:"Londres · Tomás (con amigos)",date:"s/f",sort:"2027-01-24",who:"Tomás",status:"pendiente",loc:"",amount:null,cur:"",pri:"baja",notes:"Su paquete. Ver detalle en la hoja Tomy."},
  {id:"h7",cat:"hoteles",title:"Miami · SpringHill Suites (llegada)",date:"13–14 ene · 1 noche",sort:"2027-01-13",who:"Los 4",status:"confirmado",loc:"",amount:null,cur:"USD",pri:"",notes:"Escala a la ida (noche en Miami). 6700 NW 7th St, Miami Airport. (según TripIt)"},
  {id:"h8",cat:"hoteles",title:"Miami · Courtyard Dolphin Mall (regreso)",date:"9–10 feb · 1 noche",sort:"2027-02-09",who:"Lau, Sofi, Tomás",status:"confirmado",loc:"",amount:null,cur:"USD",pri:"",notes:"Escala al regreso (Ariel ya en Panamá). 11275 NW 12th St. (según TripIt)"},
  {id:"e1",cat:"entradas",title:"ETA Reino Unido (x4)",date:"✓ aprobadas",sort:"2027-01-05",who:"Los 4",status:"confirmado",loc:"",amount:null,cur:"GBP",pri:"",notes:"✓ APROBADAS las 4. Atadas al pasaporte, no hay que imprimir nada. Validez ~2 años."},
@@ -426,6 +425,7 @@ let ov={};      // overrides de reservas
 let dov={};     // overrides de agenda (días)
 let db=null, dbReady=false;
 let filterCat="todas";
+let filterStat="todas";
 let editAgenda=false;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -544,10 +544,14 @@ function renderAgenda(){
 
 function renderReservas(){
   const it=allItems().sort((a,b)=>a.sort.localeCompare(b.sort));
-  const shown=filterCat==="todas"?it:it.filter(i=>i.cat===filterCat);
+  const byCat=filterCat==="todas"?it:it.filter(i=>i.cat===filterCat);
+  const shown=filterStat==="todas"?byCat:byCat.filter(i=>i.status===filterStat);
   let h=`<h2 class="sec">Reservas</h2><p class="sub">Tocá una reserva para cargar localizador, monto y notas. Se guarda solo.</p><div class="filters">`;
   h+=`<button class="chip" data-f="todas" aria-pressed="${filterCat==="todas"}">Todas</button>`;
   Object.keys(CATS).forEach(k=>h+=`<button class="chip" data-f="${k}" aria-pressed="${filterCat===k}">${CATS[k].ico} ${CATS[k].nm}</button>`);
+  h+=`</div><div class="filters">`;
+  h+=`<button class="chip" data-fs="todas" aria-pressed="${filterStat==="todas"}">Todos</button>`;
+  STAT.forEach(s=>h+=`<button class="chip" data-fs="${s}" aria-pressed="${filterStat===s}">${STATLBL[s]}</button>`);
   h+=`</div><div class="list">`;
   shown.forEach(i=>{
     const amt=money(i.amount,i.cur);
@@ -608,7 +612,7 @@ function switchView(v){
 document.addEventListener("click",e=>{
   const tab=e.target.closest(".tab"); if(tab){switchView(tab.dataset.view);return;}
   const goto=e.target.closest("[data-goto]"); if(goto){switchView("reservas");setTimeout(()=>{const el=$(`.item[data-id="${goto.dataset.goto}"]`);if(el){el.classList.add("open");el.scrollIntoView({behavior:"smooth",block:"center"});}},60);return;}
-  const chip=e.target.closest(".chip"); if(chip){filterCat=chip.dataset.f;renderReservas();return;}
+  const chip=e.target.closest(".chip"); if(chip){if(chip.dataset.fs!==undefined){filterStat=chip.dataset.fs;}else{filterCat=chip.dataset.f;}renderReservas();return;}
   if(e.target.id==="editAgendaBtn"){editAgenda=!editAgenda;renderAgenda();return;}
   const add=e.target.closest("[data-addstop]"); if(add){const id=add.dataset.addstop;const s=stopsOf(id);s.push({id:uid(),time:"",name:"",note:"",move:""});saveDay(id,{stops:s});renderAgenda();return;}
   const dstop=e.target.closest("[data-delstop]"); if(dstop){const id=dstop.dataset.day;const s=stopsOf(id).filter(x=>x.id!==dstop.dataset.stop);saveDay(id,{stops:s});renderAgenda();return;}
