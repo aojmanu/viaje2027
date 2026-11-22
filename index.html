@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Viaje 2027</title>
+<meta name="description" content="Planificador del viaje familiar Ojman a Europa, enero–febrero 2027.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FBFAF7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15120D" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Viaje 2027">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: sticky topbar (title + progress + tabs) over a single-column app; cards per reservation, editable timeline per day. */
+:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+[hidden]{display:none!important}
+:root{
+  --bg:#FBFAF7; --surface:#FFFFFF; --surface-2:#F6F2EA;
+  --ink:#241F17; --muted:#6E675B; --faint:#938B7C; --line:#E8E1D4;
+  --accent:#B16A22; --accent-ink:#8A4F13; --accent-weak:#F4E8D7;
+  --ok:#2F7D53; --ok-bg:#DCEEE2; --warn:#A9741A; --warn-bg:#F6E9CE; --info:#2F6AA0; --info-bg:#DCE9F3;
+  --es:#C07A24; --uk:#3E7E6E; --fr:#4659A6;
+  --shadow:0 1px 2px rgba(40,32,20,.05),0 6px 20px rgba(40,32,20,.06);
+  --d:"Fraunces",Georgia,serif; --b:"DM Sans",system-ui,sans-serif; --m:"Space Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15120D; --surface:#1E1A13; --surface-2:#231E16;
+  --ink:#F1EADD; --muted:#A79D8B; --faint:#857B6A; --line:#2E2719;
+  --accent:#E09A52; --accent-ink:#E9B477; --accent-weak:#352817;
+  --ok:#7CC79B; --ok-bg:#1E3328; --warn:#E0B566; --warn-bg:#352a14; --info:#7FB2DD; --info-bg:#182a3a;
+  --es:#E0A85A; --uk:#6FB3A1; --fr:#8491D8;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.35);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#15120D; --surface:#1E1A13; --surface-2:#231E16;
+  --ink:#F1EADD; --muted:#A79D8B; --faint:#857B6A; --line:#2E2719;
+  --accent:#E09A52; --accent-ink:#E9B477; --accent-weak:#352817;
+  --ok:#7CC79B; --ok-bg:#1E3328; --warn:#E0B566; --warn-bg:#352a14; --info:#7FB2DD; --info-bg:#182a3a;
+  --es:#E0A85A; --uk:#6FB3A1; --fr:#8491D8;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--b);line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+.wrap{width:100%;max-width:880px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.tnum{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--m)}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.appbar{display:flex;align-items:center;gap:14px;padding-block:12px}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand .k{font-family:var(--m);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink)}
+.brand h1{font-family:var(--d);font-weight:600;font-size:21px;margin:1px 0 0;letter-spacing:-.01em;white-space:nowrap}
+.prog{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.prog .lbl{font-size:12px;color:var(--muted);text-align:right;line-height:1.2}
+.prog .lbl b{color:var(--ink);font-size:14px;font-family:var(--m)}
+.ring{--p:0;width:42px;height:42px;border-radius:50%;flex-shrink:0;background:conic-gradient(var(--ok) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;position:relative}
+.ring::after{content:"";width:32px;height:32px;border-radius:50%;background:var(--surface)}
+.ring span{position:absolute;font-size:11px;font-weight:700;font-family:var(--m);color:var(--ok)}
+.sync{width:8px;height:8px;border-radius:50%;background:var(--faint);flex-shrink:0;align-self:flex-start;margin-top:2px}
+.sync.on{background:var(--ok)}
+
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font-family:var(--b);font-weight:600;font-size:14px;padding:7px 13px;border-radius:999px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.tab[aria-selected="true"]{background:var(--accent-weak);color:var(--accent-ink)}
+
+main{padding-block:20px 70px}
+.view{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2.sec{font-family:var(--d);font-weight:600;font-size:17px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.muted{color:var(--muted)}
+
+/* Resumen */
+.ovgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.catcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.catcard .top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.catcard .ico{font-size:16px}
+.catcard .nm{font-weight:600;font-size:14px}
+.catcard .ct{margin-left:auto;font-family:var(--m);font-size:12px;color:var(--muted)}
+.bar{height:7px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--ok);border-radius:999px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
+.panel h3{font-family:var(--d);font-weight:600;font-size:15px;margin:0 0 12px}
+.falta{display:flex;flex-direction:column;gap:0}
+.frow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px dashed var(--line);cursor:pointer}
+.frow:first-child{border-top:0}
+.frow .fi{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.frow .ft{font-weight:500;font-size:14px;min-width:0}
+.frow .ft small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.frow .fd{margin-left:auto;font-family:var(--m);font-size:11px;color:var(--muted);white-space:nowrap}
+.dotpri{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pri-alta{background:#c9522a}.pri-media{background:var(--warn)}.pri-baja{background:var(--faint)}
+.moneyrow{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-top:1px dashed var(--line)}
+.moneyrow:first-of-type{border-top:0}
+.moneyrow .v{font-family:var(--m);font-weight:700}
+.big{font-family:var(--d);font-size:26px;font-weight:600}
+
+/* Reservas */
+.filters{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;padding-bottom:2px}
+.filters::-webkit-scrollbar{display:none}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-family:var(--b);font-weight:600;font-size:13px;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.item.s-confirmado{border-left:3px solid var(--ok)}
+.item.s-reservado{border-left:3px solid var(--info)}
+.item.s-pendiente{border-left:3px solid var(--warn)}
+.ihead{display:flex;align-items:center;gap:11px;padding:13px 14px;cursor:pointer}
+.ihead .ico{font-size:17px;width:22px;text-align:center;flex-shrink:0}
+.imid{min-width:0;flex:1}
+.imid .t{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.imid .meta{color:var(--muted);font-size:12.5px;margin-top:2px}
+.imid .meta .mono{color:var(--accent-ink)}
+.pill{font-size:11px;font-weight:700;font-family:var(--b);padding:3px 9px;border-radius:999px;white-space:nowrap;flex-shrink:0;letter-spacing:.01em}
+.pill.pendiente{background:var(--warn-bg);color:var(--warn)}
+.pill.reservado{background:var(--info-bg);color:var(--info)}
+.pill.confirmado{background:var(--ok-bg);color:var(--ok)}
+.amt{font-family:var(--m);font-size:12.5px;color:var(--muted);flex-shrink:0;white-space:nowrap}
+.chev{color:var(--faint);transition:transform .2s;flex-shrink:0}
+.item.open .chev{transform:rotate(90deg)}
+.detail{display:none;padding:2px 14px 15px;border-top:1px solid var(--line)}
+.item.open .detail{display:block}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:13px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+.field input,.field select,.field textarea{font-family:var(--b);font-size:14px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:9px 10px;width:100%}
+.field input.mono{font-family:var(--m);font-size:13px}
+.field textarea{resize:vertical;min-height:52px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.drow{display:flex;align-items:center;gap:14px;margin-top:13px;flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+.del{appearance:none;border:1px solid var(--line);background:transparent;color:#c9522a;font-family:var(--b);font-weight:600;font-size:13px;padding:6px 12px;border-radius:9px;cursor:pointer}
+.addbtn{appearance:none;width:100%;border:1.5px dashed var(--line);background:transparent;color:var(--accent-ink);font-family:var(--b);font-weight:600;font-size:14px;padding:13px;border-radius:14px;cursor:pointer;margin-top:12px}
+.addbtn:hover{border-color:var(--accent);background:var(--accent-weak)}
+
+/* Agenda */
+.editbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.editbtn{appearance:none;border:1px solid var(--accent);background:var(--accent-weak);color:var(--accent-ink);font-family:var(--b);font-weight:600;font-size:13px;padding:7px 14px;border-radius:999px;cursor:pointer}
+.editbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.savehint{font-size:12px;color:var(--muted)}
+.phase{margin-bottom:26px}
+.ptag{font-family:var(--m);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.cityband{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:11px 14px;border-radius:12px 12px 0 0;color:#fff;margin-top:14px}
+.cityband .cn{font-family:var(--d);font-weight:600;font-size:17px}
+.cityband .ch{font-size:12.5px;opacity:.92}
+.cb-es{background:var(--es)}.cb-uk{background:var(--uk)}.cb-fr{background:var(--fr)}
+.cityblock{border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;overflow:hidden;background:var(--surface)}
+.day{padding:14px;border-top:1px solid var(--line)}
+.day:first-child{border-top:0}
+.dhead{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.dday{font-family:var(--m);font-size:11px;font-weight:700;color:#fff;padding:3px 8px;border-radius:7px}
+.dtitle{font-family:var(--d);font-weight:600;font-size:15.5px}
+.dmove{margin-left:auto;font-size:11.5px;font-family:var(--m);color:var(--accent-ink);background:var(--accent-weak);padding:2px 8px;border-radius:7px}
+/* stops read */
+.stops{display:flex;flex-direction:column;margin:2px 0 0}
+.move{display:flex;align-items:center;gap:7px;font-family:var(--m);font-size:11px;color:var(--muted);padding:2px 0 2px 3px}
+.move .arr{color:var(--faint)}
+.stopline{display:flex;gap:10px;align-items:flex-start;padding:4px 0}
+.stopdot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0}
+.stoptime{font-family:var(--m);font-size:11px;font-weight:700;color:var(--accent-ink);min-width:42px;flex-shrink:0;margin-top:3px}
+.stopbody{min-width:0}
+.stopname{font-size:13.5px;font-weight:500;line-height:1.4}
+.stopnote{font-size:12px;color:var(--muted);margin-top:1px}
+.deat{font-size:13px;color:var(--muted);margin-top:9px}
+.deat b{color:var(--accent-ink);font-weight:600;font-family:var(--m);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-right:6px}
+.dtip{font-size:12.5px;color:var(--muted);margin-top:6px;padding-left:12px;border-left:2px solid var(--line)}
+/* stops edit */
+.di input{font-family:var(--b);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 9px;color:var(--ink);font-size:14px}
+.di .dt-title{font-family:var(--d);font-weight:600;font-size:15px;flex:1;min-width:120px}
+.di .dt-move{font-family:var(--m);font-size:12px;max-width:190px}
+.estop{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px;margin:7px 0;display:flex;flex-direction:column;gap:6px}
+.estop .r{display:flex;gap:6px;align-items:center}
+.estop input,.estop textarea{font-family:var(--b);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 8px;width:100%;color:var(--ink)}
+.estop input.time{max-width:66px;font-family:var(--m);flex-shrink:0}
+.estop input.mv{font-family:var(--m);font-size:12px;color:var(--muted)}
+.estop input:focus,.estop textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+.estop .ctrls{display:flex;gap:5px;margin-left:auto}
+.iconbtn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:13px;flex-shrink:0;line-height:1}
+.iconbtn.rm{color:#c9522a}
+.iconbtn:disabled{opacity:.3;cursor:default}
+.addstop{appearance:none;border:1.5px dashed var(--line);background:transparent;color:var(--accent-ink);font-family:var(--b);font-weight:600;font-size:13px;padding:8px;border-radius:9px;cursor:pointer;width:100%;margin-top:4px}
+.addstop:hover{border-color:var(--accent);background:var(--accent-weak)}
+.empty{color:var(--muted);text-align:center;padding:26px 10px;font-size:14px}
+</style>
+
+<div class="topbar">
+  <div class="wrap appbar">
+    <div class="brand"><span class="k">Familia Ojman · Europa</span><h1>Viaje 2027</h1></div>
+    <div class="prog">
+      <div class="lbl">confirmadas<br><b id="progtxt">0/0</b></div>
+      <div class="ring" id="ring"><span id="ringpct">0%</span></div>
+      <div class="sync" id="sync" title="Guardado automático"></div>
+    </div>
+  </div>
+  <nav class="wrap tabs" role="tablist">
+    <button class="tab" role="tab" data-view="resumen" aria-selected="true">Resumen</button>
+    <button class="tab" role="tab" data-view="agenda" aria-selected="false">Día a día</button>
+    <button class="tab" role="tab" data-view="reservas" aria-selected="false">Reservas</button>
+    <button class="tab" role="tab" data-view="gastos" aria-selected="false">Gastos</button>
+  </nav>
+</div>
+
+<main class="wrap">
+  <section id="view-resumen" class="view"></section>
+  <section id="view-agenda" class="view" hidden></section>
+  <section id="view-reservas" class="view" hidden></section>
+  <section id="view-gastos" class="view" hidden></section>
+</main>
+
+<script>
+/* ---------- CONST ---------- */
+const CATS={vuelos:{nm:"Vuelos",ico:"✈"},trenes:{nm:"Trenes",ico:"🚆"},hoteles:{nm:"Hoteles",ico:"🏨"},auto:{nm:"Auto",ico:"🚗"},entradas:{nm:"Entradas",ico:"🎟"}};
+const STAT=["pendiente","reservado","confirmado"];
+const STATLBL={pendiente:"Pendiente",reservado:"Reservado",confirmado:"Confirmado"};
+
+/* ---------- RESERVAS (catálogo base) ---------- */
+const DEFAULTS=[
+ {id:"v1",cat:"vuelos",title:"EZE → PTY → MIA",date:"13 ene",sort:"2027-01-13",who:"Los 4",status:"confirmado",loc:"BLH340",amount:null,cur:"",pri:"",notes:"Copa CM364 (sale 09:10) / CM740. Noche a bordo."},
+ {id:"v2",cat:"vuelos",title:"MIA → Múnich → Madrid",date:"14–15 ene",sort:"2027-01-14",who:"Los 4",status:"confirmado",loc:"8YBD4F / 8YIMWP",amount:null,cur:"",pri:"",notes:"Lufthansa LH461 / LH1804. Llega Madrid 15/1 17:50."},
+ {id:"v3",cat:"vuelos",title:"Sevilla → Londres",date:"26 ene",sort:"2027-01-26",who:"Ariel, Lau, Sofi",status:"confirmado",loc:"NGFW6V",amount:null,cur:"EUR",pri:"",notes:"Vueling VY7505 · SVQ 13:40 → LHR 15:30. Asientos 3D/3E/3F."},
+ {id:"v4",cat:"vuelos",title:"París (CDG) → Newark → Panamá",date:"3 feb",sort:"2027-02-03",who:"Ariel",status:"confirmado",loc:"A00BUJ",amount:null,cur:"",pri:"",notes:"United UA56 / UA1021. Sale CDG 9:25, llega Panamá 20:02."},
+ {id:"v5",cat:"vuelos",title:"París → Madrid",date:"6 feb",sort:"2027-02-06",who:"Lau, Sofi",status:"confirmado",loc:"RW69UQ",amount:null,cur:"EUR",pri:"",notes:"Vueling VY5133 · Orly 14:25 → Madrid 16:30."},
+ {id:"v6",cat:"vuelos",title:"Barcelona → Madrid",date:"s/f",sort:"2027-02-07",who:"Tomás",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Su paquete. Llegar a Madrid antes del 9/2."},
+ {id:"v7",cat:"vuelos",title:"Salida de Tomás a Londres",date:"23 ene",sort:"2027-01-23",who:"Tomás",status:"confirmado",loc:"OP35WN",amount:null,cur:"EUR",pri:"",notes:"Vueling VY7505 · Sevilla 13:40 → Londres (con su paquete)."},
+ {id:"v8",cat:"vuelos",title:"Madrid → Miami",date:"9 feb",sort:"2027-02-09",who:"Lau, Sofi, Tomás",status:"confirmado",loc:"8YBD4F",amount:null,cur:"",pri:"",notes:"Lufthansa LH1117 / LH462 vía Frankfurt."},
+ {id:"v9",cat:"vuelos",title:"Miami → Panamá",date:"10 feb",sort:"2027-02-10",who:"Lau, Sofi, Tomás",status:"confirmado",loc:"BMPGP3",amount:null,cur:"",pri:"",notes:"Copa CM227. 17:20 → 20:29."},
+ {id:"v10",cat:"vuelos",title:"Panamá ⇄ Cancún",date:"11 / 20 feb",sort:"2027-02-11",who:"Los 4",status:"pendiente",loc:"",amount:null,cur:"USD",pri:"baja",notes:"Copa. Cancún se compra más adelante."},
+ {id:"v11",cat:"vuelos",title:"Panamá → Buenos Aires",date:"27 feb",sort:"2027-02-27",who:"Los 4",status:"confirmado",loc:"BLH340",amount:null,cur:"",pri:"",notes:"Copa CM219. Regreso a casa."},
+ {id:"t1",cat:"trenes",title:"Madrid ⇄ Valencia",date:"16 ene",sort:"2027-01-16",who:"Los 8 (con Waserman)",status:"confirmado",loc:"5RKVN9",amount:535.60,cur:"EUR",pri:"",shared:true,notes:"AVE/AVLO. Ida 08:30 Chamartín→10:24 Valencia · vuelta 21:12→23:18. 8 billetes (4+4 Waserman)."},
+ {id:"t2",cat:"trenes",title:"Madrid → Sevilla",date:"21 ene",sort:"2027-01-21",who:"Los 4",status:"confirmado",loc:"COVA3I",amount:null,cur:"EUR",pri:"",notes:"iryo 06136 · Atocha 13:05 → Sevilla-Santa Justa 15:46."},
+ {id:"t3",cat:"trenes",title:"Sevilla ⇄ Córdoba",date:"24 ene",sort:"2027-01-24",who:"Los 4",status:"confirmado",loc:"X29FSR / KWOA87",amount:null,cur:"EUR",pri:"",notes:"iryo · ida 09:34→10:15 (X29FSR) · vuelta 19:40→20:34 (KWOA87)."},
+ {id:"t4",cat:"trenes",title:"Sevilla ⇄ Granada",date:"22 ene",sort:"2027-01-22",who:"Los 4",status:"confirmado",loc:"Z3FH8U",amount:null,cur:"EUR",pri:"",notes:"vía Córdoba · ida 07:18→10:54 · vuelta 18:05→21:39."},
+ {id:"t5",cat:"trenes",title:"Londres → París (Eurostar)",date:"31 ene",sort:"2027-01-31",who:"Ariel, Lau, Sofi",status:"confirmado",loc:"XKY6KJ",amount:null,cur:"EUR",pri:"",notes:"Eurostar 9018 · St Pancras 10:31 → Paris Nord 13:59."},
+ {id:"a1",cat:"auto",title:"Madrid → Toledo → Segovia → Madrid",date:"18 ene",sort:"2027-01-18",who:"Los 4",status:"confirmado",loc:"1208540652",amount:223.46,cur:"EUR",pri:"",shared:true,notes:"Europcar FIAT Ulysse (9 plazas). Plaza de España 8:00→23:30. Incluye 350 km (ruta ~335)."},
+ {id:"a2",cat:"auto",title:"Sevilla → Algarve (Lagos) ida y vuelta",date:"25 ene",sort:"2027-01-25",who:"Los 4",status:"reservado",loc:"30582329AR1",amount:null,cur:"EUR",pri:"",notes:"Avis Renault Austral · Santa Justa 08:00→21:30. Ponta da Piedade, Lagos."},
+ {id:"h1",cat:"hoteles",title:"Madrid · Petit Palace Plaza del Carmen",date:"15–21 ene · 6 noches",sort:"2027-01-15",who:"Los 4 (2 dobles)",status:"confirmado",loc:"P9344796 / P3496272",amount:2643.06,cur:"EUR",pri:"",notes:"2 habitaciones · desayuno incluido · cancelación gratuita · pago en el hotel."},
+ {id:"h2",cat:"hoteles",title:"Sevilla · H10 Casa de la Plata",date:"21–26 ene · 5 noches",sort:"2027-01-21",who:"Los 4 (2 dobles)",status:"confirmado",loc:"4402-3DA9954C9ACE",amount:1565.70,cur:"EUR",pri:"",notes:"C/ Lagar 2-4, Centro · desayuno incl · cancel. gratis hasta 7 días antes · pago en el hotel."},
+ {id:"h3",cat:"hoteles",title:"Londres · Airbnb (2 dorm)",date:"26–31 ene · 5 noches",sort:"2027-01-26",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"GBP",pri:"alta",notes:"Zonas: Covent Garden / South Bank / Kensington / Notting Hill."},
+ {id:"h4",cat:"hoteles",title:"París · Citadines (aparthotel 4★)",date:"31 ene – 6 feb",sort:"2027-01-31",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"alta",notes:"Recepción 24h. Saint-Germain / Les Halles / Opéra."},
+ {id:"h5",cat:"hoteles",title:"Madrid · cierre",date:"6–9 feb · 3 noches",sort:"2027-02-06",who:"Lau, Sofi, Tomás",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Reencuentro con Tomás antes de volver juntos."},
+ {id:"h6",cat:"hoteles",title:"Londres · Tomás (con amigos)",date:"s/f",sort:"2027-01-24",who:"Tomás",status:"pendiente",loc:"",amount:null,cur:"",pri:"baja",notes:"Su paquete."},
+ {id:"e1",cat:"entradas",title:"ETA Reino Unido (x4)",date:"✓ aprobadas",sort:"2027-01-05",who:"Los 4",status:"confirmado",loc:"",amount:null,cur:"GBP",pri:"",notes:"✓ APROBADAS las 4. Atadas al pasaporte, no hay que imprimir nada. Validez ~2 años."},
+ {id:"e2",cat:"entradas",title:"Alhambra y Generalife",date:"22 ene",sort:"2027-01-22",who:"Los 4",status:"confirmado",loc:"2158490NBRYF",amount:null,cur:"EUR",pri:"",notes:"Palacios Nazaríes 12:00. Llevar DNI/pasaporte original."},
+ {id:"e3",cat:"entradas",title:"Torre Eiffel",date:"1 feb",sort:"2027-02-01",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"alta",notes:"Reserva horaria (al atardecer). Pisos 1 y 2 — la cima suele cerrar en invierno."},
+ {id:"e4",cat:"entradas",title:"Real Alcázar",date:"23 ene",sort:"2027-01-23",who:"Los 4",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Comprar online, franja de tarde temprana (cierra 16:30)."},
+ {id:"e5",cat:"entradas",title:"Museo del Prado",date:"17 ene",sort:"2027-01-17",who:"Los 4",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Entrada con horario."},
+ {id:"e6",cat:"entradas",title:"Oceanogràfic · Ciudad de las Artes",date:"16 ene",sort:"2027-01-16",who:"Los 8",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Tickets online. Valencia."},
+ {id:"e7",cat:"entradas",title:"Sky Garden (piso 35)",date:"27 ene",sort:"2027-01-27",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"",pri:"media",notes:"Gratis pero reservar online en skygarden.london."},
+ {id:"e8",cat:"entradas",title:"Tour en barco · Ponta da Piedade",date:"25 ene",sort:"2027-01-25",who:"Los 4",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Reservar cupo (depende del clima)."},
+ {id:"e9",cat:"entradas",title:"Cambio de guardia · Buckingham",date:"29 ene",sort:"2027-01-29",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"",pri:"baja",notes:"Gratis. Chequear calendario (invierno mié/vie/dom ~11h)."},
+ {id:"e10",cat:"entradas",title:"Musical del West End",date:"28 ene",sort:"2027-01-28",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"GBP",pri:"baja",notes:"Reservar con anticipación."},
+ {id:"e11",cat:"entradas",title:"Restaurantes con reserva",date:"varios",sort:"2027-01-17",who:"—",status:"pendiente",loc:"",amount:null,cur:"",pri:"media",notes:"Botín / Casa Lucio (Mad), El Rinconcillo (Sev), Dishoom (Lon)… sin mariscos ni pescado."},
+ {id:"e12",cat:"entradas",title:"Museo del Louvre",date:"1 feb",sort:"2027-02-01",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"alta",notes:"Reserva horaria. Lunes ABRE (cerrado martes)."},
+ {id:"e13",cat:"entradas",title:"Palacio de Versalles",date:"2 feb",sort:"2027-02-02",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Entrada + RER C. Martes ABRE (cerrado lunes)."},
+ {id:"e14",cat:"entradas",title:"London Eye",date:"29 ene",sort:"2027-01-29",who:"Ariel, Lau, Sofi",status:"pendiente",loc:"",amount:null,cur:"GBP",pri:"media",notes:"South Bank, al atardecer. Entrada con horario."},
+ {id:"e15",cat:"entradas",title:"Sinagoga de Córdoba",date:"24 ene",sort:"2027-01-24",who:"Los 4",status:"pendiente",loc:"",amount:null,cur:"EUR",pri:"media",notes:"Judería. Entrada aparte (económica). Domingo a la mañana."}
+];
+
+/* ---------- AGENDA (día a día, editable) ---------- */
+const PHASES=[
+ {tag:"España · primera parte",cities:[
+  {c:"es",flag:"🇪🇸",nm:"Madrid",meta:"15–21 ene · 6 noches · Petit Palace Plaza del Carmen ✓",days:[
+   {id:"mad-15",d:"Vie 15",t:"Llegada a Madrid",move:"✈ Barajas · 17:50",eat:"",tips:["✓ Hotel reservado: 2 dobles, desayuno, cancelación gratis."],stops:[
+     {time:"18:30",name:"Check-in · Petit Palace Plaza del Carmen",note:"Plaza del Carmen 4, junto a Sol",move:"🚇 Barajas → Sol (L8+L1) o taxi, ~30–40 min"},
+     {time:"",name:"Paseo nocturno: Gran Vía y Puerta del Sol",note:"",move:"🚶 2 min desde el hotel"}]},
+   {id:"mad-16",d:"Sáb 16",t:"Valencia (día completo)",move:"🚆 ✓ AVE/AVLO · 5RKVN9",eat:"Casa Carmela o Navarro (paella)",tips:["★ Free tour de Civitatis por Valencia."],stops:[
+     {time:"08:30",name:"Tren a Valencia (con los Waserman)",note:"Chamartín → V. Joaquín Sorolla · llega 10:24",move:"🚇 Sol → Chamartín (L1→L10), ~20 min"},
+     {time:"",name:"Ciudad de las Artes y las Ciencias + Oceanogràfic",note:"",move:"🚌 bus 95 / taxi desde la estación"},
+     {time:"",name:"Casco histórico y Mercado Central",note:"",move:"🚶 / tranvía"},
+     {time:"21:12",name:"Vuelta a Madrid",note:"llega 23:18 a Chamartín",move:"🚆 AVLO"}]},
+   {id:"mad-17",d:"Dom 17",t:"Madrid histórico",move:"",eat:"Almuerzo: Museo del Jamón o Casa Ciriaco · Cena: Botín o Rosi La Loca",tips:["★ Free tour de Civitatis por Madrid."],stops:[
+     {time:"",name:"Plaza Mayor y Mercado de San Miguel",note:"",move:"🚶 5 min desde Sol"},
+     {time:"",name:"La Latina y el Rastro (domingo AM)",note:"",move:"🚶 10 min"},
+     {time:"",name:"Puerta del Sol y Gran Vía",note:"",move:"🚶"}]},
+   {id:"mad-18",d:"Lun 18",t:"Toledo + Segovia",move:"🚗 Europcar · Plaza de España 8:00→23:30",eat:"Toledo: La Abadía · Segovia: Mesón de Cándido (cochinillo)",tips:["★ Free tours de Civitatis en Toledo y Segovia.","Estacionar fuera de los cascos. Incluye 350 km (ruta ~335)."],stops:[
+     {time:"08:00",name:"Retiro del auto (Europcar)",note:"FIAT Ulysse 9 plazas · reserva 1208540652",move:"🚶 Hotel → Plaza de España, ~15 min"},
+     {time:"09:00",name:"Toledo",note:"Catedral Primada, Alcázar, Sto. Tomé (El Greco), Judería, Mirador del Valle",move:"🚗 ~1h desde Madrid"},
+     {time:"15:00",name:"Segovia",note:"Acueducto, Alcázar, Catedral, Judería",move:"🚗 ~1h45 desde Toledo"},
+     {time:"",name:"Vuelta a Madrid",note:"",move:"🚗 ~1h15"}]},
+   {id:"mad-19",d:"Mar 19",t:"Arte y realeza",move:"",eat:"Almuerzo: Honest Greens o El Brillante · Cena: Casa Lucio o Amazónico",tips:[],stops:[
+     {time:"",name:"Museo del Prado",note:"",move:"🚇 Sol → Banco de España (L2), ~8 min"},
+     {time:"",name:"Parque del Retiro",note:"",move:"🚶 10 min"},
+     {time:"",name:"Palacio Real",note:"",move:"🚇 ~12 min"}]},
+   {id:"mad-20",d:"Mié 20",t:"Madrid libre",move:"",eat:"",tips:[],stops:[
+     {time:"",name:"Chueca y Malasaña",note:"",move:"🚶 / 🚇"},
+     {time:"",name:"Reina Sofía o Thyssen",note:"",move:"🚇"},
+     {time:"",name:"Compras",note:"",move:""}]}
+  ]},
+  {c:"es",flag:"🇪🇸",nm:"Sevilla",meta:"21–26 ene · 5 noches · H10 Casa de la Plata ✓",days:[
+   {id:"sev-21",d:"Jue 21",t:"Madrid → Sevilla",move:"🚆 AVE ~2h30",eat:"Casa Morales o Taberna Álvaro Peregil",tips:["★ Free tour de Civitatis por Sevilla."],stops:[
+     {time:"",name:"Catedral y Giralda",note:"sepulcro de Colón, Patio de los Naranjos",move:"🚶 desde el hotel"},
+     {time:"",name:"Barrio de Santa Cruz",note:"",move:"🚶 al lado"}]},
+   {id:"sev-22",d:"Vie 22",t:"Granada · Alhambra",move:"🚆 ✓ ida 07:18 · vuelta 18:05 · Z3FH8U (vía Córdoba)",eat:"Parador de Granada o La Mimbre (junto a la Alhambra)",tips:["★ Free tour por el Albaicín.","Alhambra ✓ · Palacios Nazaríes 12:00. Llevar DNI/pasaporte original."],stops:[
+     {time:"07:18",name:"Tren a Granada",note:"vía Córdoba · llega 10:54",move:"🚆 Santa Justa → Granada"},
+     {time:"12:00",name:"Alhambra y Generalife",note:"Palacios Nazaríes 12:00 (hora exacta)",move:"🚌 C30/C32 o taxi a la Alhambra"},
+     {time:"",name:"Albaicín y Mirador de San Nicolás",note:"",move:"🚶 / bus"},
+     {time:"18:05",name:"Vuelta a Sevilla",note:"llega 21:39",move:"🚆"}]},
+   {id:"sev-23",d:"Sáb 23",t:"Despedir a Tomás · Real Alcázar",move:"🚌 bus EA aeropuerto ↔ centro (€4)",eat:"Las Teresas o Bodega Santa Cruz",tips:["Hoy Tomás vuela a Londres (Vueling VY7505 13:40 · OP35WN).","Real Alcázar: comprar online, franja de tarde temprana (cierra 16:30)."],stops:[
+     {time:"~12:00",name:"Llevar a Tomás al aeropuerto",note:"Vueling VY7505 13:40 → Londres",move:"🚌 bus EA o taxi"},
+     {time:"15:00",name:"Real Alcázar",note:"entrada con franja horaria (Puerta del León)",move:"🚶 centro"},
+     {time:"",name:"Barrio de Santa Cruz, Catedral y Giralda",note:"",move:"🚶"},
+     {time:"",name:"Triana al atardecer",note:"Betis, Pureza, Mercado de Triana",move:"🚶 cruzar el puente"}]},
+   {id:"sev-24",d:"Dom 24",t:"Córdoba · Judería y Mezquita",move:"🚆 ✓ ida 09:34 · vuelta 19:40 · X29FSR / KWOA87",eat:"Bodegas Mezquita o Casa Pepe de la Judería",tips:["★ Free tour de Civitatis por Córdoba.","Mañana: Sinagoga + Judería + Alcázar · Mezquita por la tarde (comprar online con franja)."],stops:[
+     {time:"09:34",name:"Tren a Córdoba",note:"llega 10:15",move:"🚆 Santa Justa → Córdoba"},
+     {time:"",name:"Sinagoga de Córdoba y Judería",note:"una de las 3 sinagogas medievales que se conservan en España",move:"🚶"},
+     {time:"",name:"Alcázar de los Reyes Cristianos",note:"",move:"🚶"},
+     {time:"14:00",name:"Mezquita-Catedral",note:"franja de tarde (comprar online)",move:"🚶"},
+     {time:"19:40",name:"Vuelta a Sevilla",note:"llega 20:34",move:"🚆"}]},
+   {id:"sev-25",d:"Lun 25",t:"Algarve · Lagos",move:"🚗 auto, ida y vuelta",eat:"",tips:["Tour en barco por las grutas (reservar, depende del clima)."],stops:[
+     {time:"",name:"Ponta da Piedade",note:"acantilados y grutas",move:"🚗 ~2h desde Sevilla"},
+     {time:"",name:"Praia Dona Ana y casco de Lagos",note:"",move:"🚶"}]}
+  ]}
+ ]},
+ {tag:"Inglaterra",cities:[
+  {c:"uk",flag:"🇬🇧",nm:"Londres",meta:"26–31 ene · 5 noches · Airbnb",days:[
+   {id:"lon-26",d:"Mar 26",t:"Westminster",move:"✈ Sevilla→Londres",eat:"Dishoom, Flat Iron o Hawksmoor",tips:["★ Free tour de Civitatis por Londres, en español."],stops:[
+     {time:"",name:"Check-in (Airbnb)",note:"",move:""},
+     {time:"",name:"Abadía de Westminster y Big Ben",note:"",move:"🚇 Tube a Westminster"},
+     {time:"",name:"London Eye y South Bank",note:"",move:"🚶 cruzar el puente"}]},
+   {id:"lon-27",d:"Mié 27",t:"La City y el río",move:"",eat:"Padella (Borough) o Duck & Waffle",tips:[],stops:[
+     {time:"",name:"Torre de Londres y Tower Bridge",note:"",move:"🚇 Tower Hill"},
+     {time:"",name:"St Paul's y Leadenhall Market",note:"el Callejón Diagón",move:"🚶 / Tube"},
+     {time:"",name:"Borough Market (almuerzo)",note:"",move:"🚶"},
+     {time:"",name:"Sky Garden al atardecer",note:"gratis, reservar en skygarden.london",move:"🚶"}]},
+   {id:"lon-28",d:"Jue 28",t:"West End y museos",move:"",eat:"Rules, Seven Dials o Clos Maggiore",tips:[],stops:[
+     {time:"",name:"British Museum",note:"",move:"🚇 Tottenham Court Road"},
+     {time:"",name:"Covent Garden, Neal's Yard, Soho/Carnaby",note:"",move:"🚶"},
+     {time:"",name:"Tate Modern",note:"",move:"🚇 / 🚶"},
+     {time:"",name:"Musical del West End (noche)",note:"",move:"🚶"}]},
+   {id:"lon-29",d:"Vie 29",t:"Realeza y compras",move:"",eat:"",tips:["Cambio de guardia: invierno mié/vie/dom ~11h."],stops:[
+     {time:"11:00",name:"Buckingham (cambio de guardia)",note:"",move:"🚇 Green Park / St James's Park"},
+     {time:"",name:"Trafalgar Square y National Gallery",note:"",move:"🚶"},
+     {time:"",name:"Hyde Park, Kensington y Harrods",note:"",move:"🚇"},
+     {time:"",name:"Oxford / Regent / Bond St",note:"",move:"🚶"},
+     {time:"atardecer",name:"London Eye",note:"South Bank · entrada con horario",move:"🚇 Waterloo / 🚶 cruzar el puente"}]},
+   {id:"lon-30",d:"Sáb 30",t:"Mercados y color",move:"",eat:"Honest Burgers, Mercato Mayfair o Half Million",tips:[],stops:[
+     {time:"",name:"Notting Hill y Portobello",note:"",move:"🚇 Notting Hill Gate"},
+     {time:"",name:"Camden Market",note:"",move:"🚇 Camden Town"},
+     {time:"",name:"Abbey Road",note:"",move:"🚇 St John's Wood"}]}
+  ]}
+ ]},
+ {tag:"Francia · cierre",cities:[
+  {c:"fr",flag:"🇫🇷",nm:"París",meta:"31 ene – 3 feb (Ariel) · hasta 6 feb (Lau y Sofi) · Citadines",days:[
+   {id:"par-31",d:"Dom 31",t:"Londres → París · Montmartre",move:"🚆 Eurostar ~2h20 · XKY6KJ (llega 13:59)",eat:"",tips:["Primera tarde con los 4: Montmartre al atardecer, linda vista de bienvenida."],stops:[
+     {time:"13:59",name:"Llegada y check-in · Citadines Bastille Marais",note:"Eurostar a Gare du Nord",move:"🚇 / taxi"},
+     {time:"atardecer",name:"Montmartre y Sacré-Cœur",note:"Place du Tertre y la mejor vista de París",move:"🚇 Anvers + funicular"},
+     {time:"",name:"Pigalle / cena por el barrio",note:"",move:"🚶"}]},
+   {id:"par-1",d:"Lun 1 feb",t:"Louvre y Torre Eiffel",move:"",eat:"",tips:["Louvre: lunes ABRE (cerrado martes). Reserva horaria.","★ Free tour de Civitatis por París, en español."],stops:[
+     {time:"",name:"Museo del Louvre",note:"reserva horaria",move:"🚇 Palais Royal–Musée du Louvre"},
+     {time:"",name:"Île de la Cité, Notre-Dame (por fuera) y Barrio Latino",note:"",move:"🚶"},
+     {time:"atardecer",name:"Torre Eiffel",note:"pisos 1 y 2 (la cima suele cerrar en invierno)",move:"🚇 Bir-Hakeim / Trocadéro"}]},
+   {id:"par-2",d:"Mar 2",t:"Palacio de Versalles",move:"🚆 RER C (~45 min)",eat:"",tips:["Versalles: martes ABRE (cerrado lunes). Entrada + jardines.","Alternativa en la ciudad: Montmartre, Sacré-Cœur y Galerías Lafayette."],stops:[
+     {time:"",name:"Palacio y Jardines de Versalles",note:"día completo",move:"🚆 RER C a Versailles Château"},
+     {time:"",name:"Vuelta a París · Campos Elíseos o Marais",note:"",move:"🚇"}]},
+   {id:"par-3",d:"Mié 3",t:"Ariel → Panamá / Lau y Sofi siguen",move:"✈ CDG 9:25",eat:"",tips:[],stops:[
+     {time:"06:30",name:"Ariel: traslado a CDG",note:"UA56 CDG→Newark 9:25 → UA1021 → Panamá 20:02 · A00BUJ ✓",move:"🚆 RER B o taxi al aeropuerto"},
+     {time:"",name:"Lau y Sofi: Galerías Lafayette y Ópera",note:"",move:"🚇 Chaussée d'Antin"},
+     {time:"",name:"Musée d'Orsay + Marais + crucero por el Sena",note:"",move:"🚶 / 🚇"}]},
+   {id:"par-4",d:"Jue 4 – Vie 5",t:"Lau y Sofi en París",move:"",eat:"",tips:[],stops:[
+     {time:"",name:"Marais, compras y cafés",note:"",move:"🚶 / 🚇"},
+     {time:"",name:"Lo que haya quedado pendiente",note:"",move:""}]},
+   {id:"par-6",d:"6 feb",t:"Lau y Sofi · cierre",move:"✈ París → Madrid",eat:"",tips:[],stops:[
+     {time:"14:25",name:"Vuelo a Madrid",note:"se reencuentran con Tomás (6–9 feb)",move:"✈ VY5133 · Orly 14:25 → Madrid 16:30 · RW69UQ ✓"},
+     {time:"",name:"Madrid con Tomás antes de volver juntos",note:"",move:""}]}
+  ]}
+ ]}
+];
+const DAYINDEX={};
+PHASES.forEach(p=>p.cities.forEach(c=>c.days.forEach(d=>{DAYINDEX[d.id]=d;})));
+
+/* ---------- STATE ---------- */
+let ov={};      // overrides de reservas
+let dov={};     // overrides de agenda (días)
+let db=null, dbReady=false;
+let filterCat="todas";
+let editAgenda=false;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>"s"+Date.now().toString(36)+Math.floor(Math.random()*1000);
+
+function allItems(){
+  const base=DEFAULTS.map(d=>{const o=ov[d.id]||{};return Object.assign({},d,o,{id:d.id});});
+  const customs=Object.keys(ov).filter(id=>ov[id]&&ov[id]._custom).map(id=>Object.assign({id},ov[id]));
+  return base.concat(customs);
+}
+function money(a,cur){
+  if(a==null||a==="")return "";
+  const n=Number(a); if(isNaN(n))return "";
+  const sym={EUR:"€",USD:"US$",GBP:"£",ARS:"$"}[cur]||"";
+  return (cur==="EUR"?sym:sym+" ")+n.toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+const priRank={alta:0,media:1,baja:2,"":3};
+function stopsOf(dayId){
+  const o=dov[dayId]||{};
+  if(o.stops!==undefined)return o.stops.map(s=>Object.assign({},s));
+  return (DAYINDEX[dayId].stops||[]).map((s,i)=>Object.assign({id:dayId+"-s"+i},s));
+}
+function dayField(dayId,k){const o=dov[dayId]||{};return o[k]!==undefined?o[k]:DAYINDEX[dayId][k];}
+
+/* ---------- RENDER ---------- */
+function render(){renderResumen();renderAgenda();renderReservas();renderGastos();updateProgress();}
+
+function updateProgress(){
+  const it=allItems();
+  const done=it.filter(i=>i.status==="confirmado").length;
+  const pct=it.length?Math.round(done/it.length*100):0;
+  $("#progtxt").textContent=done+"/"+it.length;
+  $("#ring").style.setProperty("--p",pct); $("#ringpct").textContent=pct+"%";
+}
+
+function renderResumen(){
+  const it=allItems();
+  const cats=Object.keys(CATS).map(k=>{const sub=it.filter(i=>i.cat===k);const done=sub.filter(i=>i.status==="confirmado").length;return {nm:CATS[k].nm,ico:CATS[k].ico,done,tot:sub.length,pct:sub.length?Math.round(done/sub.length*100):0};});
+  const falta=it.filter(i=>i.status!=="confirmado").sort((a,b)=>(priRank[a.pri||""]-priRank[b.pri||""])||a.sort.localeCompare(b.sort)).slice(0,8);
+  const shared=it.filter(i=>i.shared&&Number(i.amount)>0);
+  const totShared=shared.reduce((s,i)=>s+Number(i.amount),0);
+  const owedOpen=shared.filter(i=>!i.saldado).reduce((s,i)=>s+Number(i.amount)/2,0);
+  let h=`<h2 class="sec">Cómo viene el viaje</h2><p class="sub">Un vistazo a lo confirmado y lo que falta.</p><div class="ovgrid">`;
+  cats.forEach(c=>h+=`<div class="catcard"><div class="top"><span class="ico">${c.ico}</span><span class="nm">${c.nm}</span><span class="ct tnum">${c.done}/${c.tot}</span></div><div class="bar"><i style="width:${c.pct}%"></i></div></div>`);
+  h+=`</div><div class="panel"><h3>Qué falta reservar</h3><div class="falta">`;
+  if(!falta.length)h+=`<div class="muted" style="font-size:14px">¡Todo confirmado! 🎉</div>`;
+  falta.forEach(i=>h+=`<div class="frow" data-goto="${i.id}"><span class="dotpri pri-${i.pri||"media"}"></span><span class="fi">${CATS[i.cat].ico}</span><span class="ft">${esc(i.title)}<small>${esc(CATS[i.cat].nm)} · ${esc(i.who)}</small></span><span class="fd">${esc(i.date)}</span></div>`);
+  h+=`</div></div><div class="panel"><h3>Gastos compartidos (con los Waserman)</h3>`;
+  h+=`<div class="moneyrow"><span class="muted">Total compartido</span><span class="v tnum">${money(totShared,"EUR")}</span></div>`;
+  h+=`<div class="moneyrow"><span class="muted">Cada familia (½)</span><span class="v tnum">${money(totShared/2,"EUR")}</span></div>`;
+  h+=`<div class="moneyrow" style="align-items:center;margin-top:4px"><span>Te deben los Waserman</span><span class="big tnum" style="color:var(--accent-ink)">${money(owedOpen,"EUR")}</span></div></div>`;
+  $("#view-resumen").innerHTML=h;
+}
+
+function renderAgenda(){
+  let h=`<h2 class="sec">Día a día</h2><p class="sub">Tocá "Editar" para agregar, cambiar o borrar actividades y el "cómo llegar" entre cada una.</p>`;
+  h+=`<div class="editbar"><button class="editbtn ${editAgenda?"on":""}" id="editAgendaBtn">${editAgenda?"✓ Listo":"✏️ Editar actividades"}</button>${editAgenda?'<span class="savehint">Se guarda solo a medida que escribís.</span>':''}</div>`;
+  PHASES.forEach(p=>{
+    h+=`<div class="phase"><div class="ptag">${esc(p.tag)}</div>`;
+    p.cities.forEach(ct=>{
+      h+=`<div class="cityband cb-${ct.c}"><span class="cn">${ct.flag} ${esc(ct.nm)}</span><span class="ch">${esc(ct.meta)}</span></div><div class="cityblock">`;
+      ct.days.forEach(def=>{
+        const id=def.id, title=dayField(id,"t"), move=dayField(id,"move"), stops=stopsOf(id);
+        h+=`<div class="day">`;
+        if(editAgenda){
+          h+=`<div class="dhead" style="gap:7px"><span class="dday" style="background:var(--${ct.c})">${esc(def.d)}</span><span class="di" style="flex:1;display:flex;gap:6px;flex-wrap:wrap"><input class="dt-title" data-day="${id}" data-k="t" value="${esc(title)}"><input class="dt-move" data-day="${id}" data-k="move" value="${esc(move)}" placeholder="llegada / transporte"></span></div>`;
+          h+=`<div class="stops">`;
+          stops.forEach((s,idx)=>{
+            h+=`<div class="estop">
+              <div class="r"><input class="time" data-day="${id}" data-stop="${s.id}" data-k="time" value="${esc(s.time)}" placeholder="hora">
+                <input data-day="${id}" data-stop="${s.id}" data-k="name" value="${esc(s.name)}" placeholder="Actividad">
+                <span class="ctrls"><button class="iconbtn" data-up data-day="${id}" data-stop="${s.id}" ${idx===0?"disabled":""}>↑</button><button class="iconbtn" data-down data-day="${id}" data-stop="${s.id}" ${idx===stops.length-1?"disabled":""}>↓</button><button class="iconbtn rm" data-delstop data-day="${id}" data-stop="${s.id}">✕</button></span></div>
+              <input data-day="${id}" data-stop="${s.id}" data-k="note" value="${esc(s.note)}" placeholder="Detalle (opcional)">
+              <input class="mv" data-day="${id}" data-stop="${s.id}" data-k="move" value="${esc(s.move)}" placeholder="Cómo llegar (ej. 🚶 10 min / 🚇 L1)">
+            </div>`;
+          });
+          h+=`<button class="addstop" data-addstop="${id}">+ Agregar actividad</button></div>`;
+        }else{
+          h+=`<div class="dhead"><span class="dday" style="background:var(--${ct.c})">${esc(def.d)}</span><span class="dtitle">${esc(title)}</span>${move?`<span class="dmove">${esc(move)}</span>`:""}</div>`;
+          if(stops.length){
+            h+=`<div class="stops">`;
+            stops.forEach(s=>{
+              if(s.move)h+=`<div class="move"><span class="arr">↳</span>${esc(s.move)}</div>`;
+              h+=`<div class="stopline"><span class="stopdot"></span>${s.time?`<span class="stoptime">${esc(s.time)}</span>`:`<span class="stoptime"></span>`}<span class="stopbody"><span class="stopname">${esc(s.name)}</span>${s.note?`<span class="stopnote">${esc(s.note)}</span>`:""}</span></div>`;
+            });
+            h+=`</div>`;
+          }
+        }
+        if(def.eat)h+=`<div class="deat"><b>Comer</b>${esc(def.eat)}</div>`;
+        if(def.tips)def.tips.forEach(t=>h+=`<div class="dtip">${esc(t)}</div>`);
+        h+=`</div>`;
+      });
+      h+=`</div>`;
+    });
+    h+=`</div>`;
+  });
+  $("#view-agenda").innerHTML=h;
+}
+
+function renderReservas(){
+  const it=allItems().sort((a,b)=>a.sort.localeCompare(b.sort));
+  const shown=filterCat==="todas"?it:it.filter(i=>i.cat===filterCat);
+  let h=`<h2 class="sec">Reservas</h2><p class="sub">Tocá una reserva para cargar localizador, monto y notas. Se guarda solo.</p><div class="filters">`;
+  h+=`<button class="chip" data-f="todas" aria-pressed="${filterCat==="todas"}">Todas</button>`;
+  Object.keys(CATS).forEach(k=>h+=`<button class="chip" data-f="${k}" aria-pressed="${filterCat===k}">${CATS[k].ico} ${CATS[k].nm}</button>`);
+  h+=`</div><div class="list">`;
+  shown.forEach(i=>{
+    const amt=money(i.amount,i.cur);
+    h+=`<div class="item s-${i.status}" data-id="${i.id}">
+      <div class="ihead" data-toggle><span class="ico">${CATS[i.cat].ico}</span>
+        <div class="imid"><div class="t">${esc(i.title)}${i.shared?' <span class="pill" style="background:var(--accent-weak);color:var(--accent-ink)">compartido</span>':''}</div>
+          <div class="meta">${esc(i.date)} · ${esc(i.who)}${i.loc?` · <span class="mono">${esc(i.loc)}</span>`:""}</div></div>
+        ${amt?`<span class="amt">${amt}</span>`:""}<span class="pill ${i.status}">${STATLBL[i.status]}</span><span class="chev">›</span></div>
+      <div class="detail"><div class="fields">
+        <div class="field"><label>Estado</label><select data-k="status">${STAT.map(s=>`<option value="${s}" ${i.status===s?"selected":""}>${STATLBL[s]}</option>`).join("")}</select></div>
+        <div class="field"><label>Localizador / Ref.</label><input class="mono" data-k="loc" value="${esc(i.loc)}" placeholder="—"></div>
+        <div class="field"><label>Monto</label><input class="mono" data-k="amount" inputmode="decimal" value="${i.amount==null?"":i.amount}" placeholder="0.00"></div>
+        <div class="field"><label>Moneda</label><select data-k="cur">${["EUR","USD","GBP","ARS",""].map(c=>`<option value="${c}" ${(i.cur||"")===c?"selected":""}>${c||"—"}</option>`).join("")}</select></div>
+        <div class="field full"><label>Notas</label><textarea data-k="notes" placeholder="Detalles, horarios, lo que falte…">${esc(i.notes)}</textarea></div>
+      </div><div class="drow"><label class="chk"><input type="checkbox" data-k="shared" ${i.shared?"checked":""}> Compartido con los Waserman</label>${i._custom?`<button class="del" data-del style="margin-left:auto">Eliminar</button>`:""}</div></div>
+    </div>`;
+  });
+  h+=`</div><button class="addbtn" id="addbtn">+ Agregar reserva</button>`;
+  $("#view-reservas").innerHTML=h;
+}
+
+function renderGastos(){
+  const it=allItems();
+  const shared=it.filter(i=>i.shared&&Number(i.amount)>0).sort((a,b)=>a.sort.localeCompare(b.sort));
+  const tot=shared.reduce((s,i)=>s+Number(i.amount),0);
+  const openOwed=shared.filter(i=>!i.saldado).reduce((s,i)=>s+Number(i.amount)/2,0);
+  let h=`<h2 class="sec">Gastos compartidos</h2><p class="sub">Con los Waserman. Marcá "saldado" cuando te paguen.</p>`;
+  h+=`<div class="panel"><div class="moneyrow"><span class="muted">Total compartido</span><span class="v tnum">${money(tot,"EUR")}</span></div><div class="moneyrow"><span class="muted">Cada familia paga la mitad</span><span class="v tnum">${money(tot/2,"EUR")}</span></div><div class="moneyrow" style="align-items:center;margin-top:4px"><span>Te deben los Waserman</span><span class="big tnum" style="color:var(--accent-ink)">${money(openOwed,"EUR")}</span></div></div><div class="list">`;
+  if(!shared.length)h+=`<div class="empty">Todavía no marcaste ningún gasto como compartido.<br>Activá "Compartido con los Waserman" en cualquier reserva.</div>`;
+  shared.forEach(i=>{const half=Number(i.amount)/2;h+=`<div class="item ${i.saldado?"s-confirmado":"s-pendiente"}" data-id="${i.id}"><div class="ihead" style="cursor:default"><span class="ico">${CATS[i.cat].ico}</span><div class="imid"><div class="t">${esc(i.title)}</div><div class="meta">${esc(i.date)} · total <span class="mono">${money(i.amount,i.cur)}</span> · cada uno <span class="mono">${money(half,"EUR")}</span></div></div><label class="chk" style="margin:0"><input type="checkbox" data-k="saldado" ${i.saldado?"checked":""}> <span class="pill ${i.saldado?"confirmado":"pendiente"}">${i.saldado?"Saldado":"A cobrar"}</span></label></div></div>`;});
+  h+=`</div>`;
+  $("#view-gastos").innerHTML=h;
+}
+
+/* ---------- PERSIST (almacenamiento local del teléfono · offline) ---------- */
+const LS_ITEMS="viaje2027_items", LS_DAYS="viaje2027_days";
+function saveLS(){try{localStorage.setItem(LS_ITEMS,JSON.stringify(ov));localStorage.setItem(LS_DAYS,JSON.stringify(dov));$("#sync").classList.add("on");}catch(e){$("#sync").classList.remove("on");}}
+function loadLS(){try{ov=JSON.parse(localStorage.getItem(LS_ITEMS)||"{}")||{};}catch(e){ov={};}try{dov=JSON.parse(localStorage.getItem(LS_DAYS)||"{}")||{};}catch(e){dov={};}}
+function persistItem(id){saveLS();}
+function persistDay(id){saveLS();}
+function setItem(id,k,val){const cur=Object.assign({},ov[id]||{});cur[k]=val;ov[id]=cur;persistItem(id);}
+function saveDay(id,patch){dov[id]=Object.assign({},dov[id]||{},patch);persistDay(id);}
+
+/* ---------- EVENTS ---------- */
+function switchView(v){
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
+  ["resumen","agenda","reservas","gastos"].forEach(x=>$("#view-"+x).hidden=(x!==v));
+  if(location.hash.slice(1)!==v)history.replaceState(null,"","#"+v);
+  window.scrollTo(0,0);
+}
+document.addEventListener("click",e=>{
+  const tab=e.target.closest(".tab"); if(tab){switchView(tab.dataset.view);return;}
+  const goto=e.target.closest("[data-goto]"); if(goto){switchView("reservas");setTimeout(()=>{const el=$(`.item[data-id="${goto.dataset.goto}"]`);if(el){el.classList.add("open");el.scrollIntoView({behavior:"smooth",block:"center"});}},60);return;}
+  const chip=e.target.closest(".chip"); if(chip){filterCat=chip.dataset.f;renderReservas();return;}
+  if(e.target.id==="editAgendaBtn"){editAgenda=!editAgenda;renderAgenda();return;}
+  const add=e.target.closest("[data-addstop]"); if(add){const id=add.dataset.addstop;const s=stopsOf(id);s.push({id:uid(),time:"",name:"",note:"",move:""});saveDay(id,{stops:s});renderAgenda();return;}
+  const dstop=e.target.closest("[data-delstop]"); if(dstop){const id=dstop.dataset.day;const s=stopsOf(id).filter(x=>x.id!==dstop.dataset.stop);saveDay(id,{stops:s});renderAgenda();return;}
+  const up=e.target.closest("[data-up]"); if(up){moveStop(up.dataset.day,up.dataset.stop,-1);return;}
+  const dn=e.target.closest("[data-down]"); if(dn){moveStop(dn.dataset.day,dn.dataset.stop,1);return;}
+  const tog=e.target.closest("[data-toggle]"); if(tog){tog.closest(".item").classList.toggle("open");return;}
+  const del=e.target.closest("[data-del]"); if(del){const id=del.closest(".item").dataset.id;delete ov[id];render();persistItem(id);return;}
+  if(e.target.id==="addbtn"){openAdd();return;}
+});
+function moveStop(id,sid,dir){const s=stopsOf(id);const i=s.findIndex(x=>x.id===sid);const j=i+dir;if(i<0||j<0||j>=s.length)return;const t=s[i];s[i]=s[j];s[j]=t;saveDay(id,{stops:s});renderAgenda();}
+
+document.addEventListener("change",e=>{
+  if(e.target.closest("#view-agenda")){
+    const el=e.target, id=el.dataset.day; if(!id)return;
+    if(el.dataset.stop){const s=stopsOf(id);const t=s.find(x=>x.id===el.dataset.stop);if(t){t[el.dataset.k]=el.value;saveDay(id,{stops:s});}}
+    else{saveDay(id,{[el.dataset.k]:el.value});}
+    return;
+  }
+  const f=e.target.closest("[data-k]"); if(!f)return;
+  const item=e.target.closest(".item"); if(!item)return;
+  const id=item.dataset.id, k=f.dataset.k;
+  let val=f.type==="checkbox"?f.checked:f.value;
+  if(k==="amount")val=val===""?null:(parseFloat(String(val).replace(",","."))||null);
+  setItem(id,k,val);
+  if(["status","shared","saldado","amount","loc"].includes(k))render();
+});
+
+function openAdd(){
+  const cats=Object.keys(CATS).map(k=>`<option value="${k}">${CATS[k].nm}</option>`).join("");
+  const wrap=document.createElement("div"); wrap.className="item open"; wrap.style.marginTop="12px";
+  wrap.innerHTML=`<div class="detail" style="display:block;border-top:0;padding-top:14px"><div class="fields">
+    <div class="field"><label>Categoría</label><select id="na-cat">${cats}</select></div>
+    <div class="field"><label>Fecha</label><input id="na-date" placeholder="p. ej. 24 ene"></div>
+    <div class="field full"><label>Título</label><input id="na-title" placeholder="Qué es la reserva"></div>
+    <div class="field"><label>Quiénes</label><input id="na-who" placeholder="Los 4"></div>
+    <div class="field"><label>Monto</label><input id="na-amount" class="mono" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field full"><label>Notas</label><textarea id="na-notes" placeholder="Opcional"></textarea></div>
+  </div><div class="drow"><label class="chk"><input type="checkbox" id="na-shared"> Compartido con los Waserman</label>
+    <button class="del" id="na-cancel" style="color:var(--muted)">Cancelar</button>
+    <button class="addbtn" id="na-save" style="width:auto;margin:0;padding:8px 18px;border-style:solid;border-color:var(--accent);background:var(--accent-weak)">Guardar</button></div></div>`;
+  $("#addbtn").replaceWith(wrap);
+  $("#na-cancel").onclick=()=>renderReservas();
+  $("#na-save").onclick=()=>{
+    const title=$("#na-title").value.trim(); if(!title){$("#na-title").focus();return;}
+    const id="c"+Date.now(); const amt=$("#na-amount").value.trim();
+    ov[id]={_custom:true,cat:$("#na-cat").value,title,date:$("#na-date").value.trim()||"s/f",sort:"2027-12-31",who:$("#na-who").value.trim()||"—",status:"pendiente",loc:"",amount:amt===""?null:(parseFloat(amt.replace(",","."))||null),cur:"EUR",pri:"media",notes:$("#na-notes").value.trim(),shared:$("#na-shared").checked};
+    persistItem(id); render();
+  };
+}
+
+/* ---------- INIT ---------- */
+function init(){
+  loadLS();
+  dbReady=true;$("#sync").classList.add("on");
+  render();
+  const hv=location.hash.slice(1);
+  if(["resumen","agenda","reservas","gastos"].includes(hv))switchView(hv);
+  window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["resumen","agenda","reservas","gastos"].includes(v))switchView(v);});
+  // Service worker: permite usar la app sin internet (ideal en el viaje).
+  if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
+}
+if(document.readyState!=="loading")init();else window.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>
