@@ -1,5 +1,5 @@
 /* Service worker · Viaje 2027 — cachea la app para usarla sin internet. */
-const CACHE = "viaje2027-v3";
+const CACHE = "viaje2027-v4";
 const ASSETS = [
   "./",
   "./index.html",
