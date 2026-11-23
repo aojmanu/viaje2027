@@ -677,7 +677,13 @@ function init(){
   if(["resumen","agenda","reservas","gastos","tomy","paseos"].includes(hv))switchView(hv);
   window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["resumen","agenda","reservas","gastos","tomy","paseos"].includes(v))switchView(v);});
   // Service worker: permite usar la app sin internet (ideal en el viaje).
-  if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
+  if("serviceWorker" in navigator){
+    let refreshing=false;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{if(refreshing)return;refreshing=true;location.reload();});
+    window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").then(reg=>{if(reg&&reg.update)reg.update();}).catch(()=>{});});
+    // Al volver al frente, busca si hay versión nueva (y se recarga sola vía controllerchange).
+    document.addEventListener("visibilitychange",()=>{if(!document.hidden)navigator.serviceWorker.getRegistration().then(r=>{if(r&&r.update)r.update();}).catch(()=>{});});
+  }
 }
 if(document.readyState!=="loading")init();else window.addEventListener("DOMContentLoaded",init);
 </script>

@@ -1,7 +1,7 @@
 /* Service worker · Viaje 2027 — cachea la app para usarla sin internet.
    HTML: network-first (con internet trae siempre la última versión; sin
    internet usa la copia guardada). Resto de assets: cache-first. */
-const CACHE = "viaje2027-v7";
+const CACHE = "viaje2027-v8";
 const ASSETS = [
   "./",
   "./index.html",
